@@ -10,17 +10,28 @@ app = Flask(__name__, static_folder='images', static_url_path='/images')
 # DATABASE CONNECTION SETUP
 # Replace this string with the actual Driver URI from your Atlas modal screen!
 # =========================================================================
-client = MongoClient( os.getenv("MONGO_URI"))
+MONGO_URI = os.environ.get("MONGO_URI") or "mongodb+srv://mashaujunior98_db_user:5ozrMFQhK5dqcWCu@data.ccgekex.mongodb.net/?retryWrites=true&w=majority"
+MONGO_DB = os.environ.get("MONGO_DB", "gmc_ministry_db")
 
+client = None
+db = None
+members_col = None
+attendance_col = None
+db_error_message = None
 
 try:
-    client = MongoClient(MONGO_URI)
-    db = client['gmc_ministry_db']
+    if not MONGO_URI:
+        raise ValueError("Missing MongoDB connection string in MONGO_URI environment variable.")
+
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client.server_info()
+    db = client[MONGO_DB]
     members_col = db['members']
     attendance_col = db['attendance_logs']
     print("Successfully connected to GMC MongoDB Atlas database Cluster!")
 except Exception as e:
-    print(f"Database connection breakdown error: {e}")
+    db_error_message = str(e)
+    print(f"Database connection breakdown error: {db_error_message}")
 
 # Helper function to compute age accurately from birthday string or datetime object
 def calculate_age(born_str):
@@ -39,6 +50,18 @@ def calculate_age(born_str):
     except Exception:
         return "N/A"
 
+def is_db_available():
+    return members_col is not None and attendance_col is not None
+
+
+def db_unavailable_response(fallback=None, status_code=500):
+    if fallback is None:
+        fallback = {"status": "error", "message": "Database unavailable."}
+    if isinstance(fallback, list):
+        return jsonify(fallback), status_code
+    return jsonify(fallback), status_code
+
+
 # Route to serve the main frontend web page layout template
 @app.route('/')
 def index():
@@ -49,6 +72,9 @@ def index():
 # =========================================================================
 @app.route('/api/register', methods=['POST'])
 def register_member():
+    if not is_db_available():
+        return db_unavailable_response()
+
     try:
         # Pull values out of the incoming form submittal data
         data = request.form
@@ -86,6 +112,9 @@ def register_member():
 # =========================================================================
 @app.route('/api/search', methods=['GET'])
 def search_members():
+    if not is_db_available():
+        return db_unavailable_response([])
+
     query_text = request.args.get('q', '').strip()
     if not query_text:
         return jsonify([])
@@ -116,6 +145,9 @@ def search_members():
 # =========================================================================
 @app.route('/api/checkin', methods=['POST'])
 def execute_checkin():
+    if not is_db_available():
+        return db_unavailable_response()
+
     try:
         req_data = request.get_json() or {}
         member_name = req_data.get("name")
@@ -152,6 +184,9 @@ def execute_checkin():
 # =========================================================================
 @app.route('/api/current-checkins', methods=['GET'])
 def get_current_checkins():
+    if not is_db_available():
+        return db_unavailable_response([])
+
     try:
         now = datetime.now()
         # Get all members checked in but not checked out
@@ -187,6 +222,9 @@ def get_current_checkins():
 # =========================================================================
 @app.route('/api/checkout', methods=['POST'])
 def execute_checkout():
+    if not is_db_available():
+        return db_unavailable_response()
+
     try:
         req_data = request.get_json() or {}
         checkin_id = req_data.get("id")
@@ -209,6 +247,9 @@ def execute_checkout():
 # =========================================================================
 @app.route('/api/update', methods=['POST'])
 def update_profile():
+    if not is_db_available():
+        return db_unavailable_response()
+
     try:
         data = request.form
         m_id = data.get("member_id")
@@ -235,6 +276,9 @@ def update_profile():
 # =========================================================================
 @app.route('/api/roster', methods=['GET'])
 def get_emergency_roster():
+    if not is_db_available():
+        return db_unavailable_response([])
+
     try:
         # FIX: Only look up active check-ins instead of pulling all members
         active_checkins = list(attendance_col.find({"checked_out": False}))

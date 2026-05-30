@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GMC Ministry Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Customizing Tailwind configuration to integrate GMC brand colors dynamically
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gmc: {
+                            gold: '#C59B27',      /* Vibrant Premium Gold Accent */
+                            goldDark: '#A47E1E',  /* Deep Gold for hover states */
+                            goldLight: '#FDFBF4', /* Soft tint gold background */
+                            bronze: '#866424',    /* Rich core tone */
+                            dark: '#2A1F0A',      /* Deep background header shade */
+                            slateText: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Safe-padding for modern mobile notch/home indicator layouts */
+        body {
+            padding-bottom: env(safe-area-inset-bottom, 4.5rem);
+        }
+        /* Sleek custom scrollbar tracking for dynamic dropdown menus */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #C59B27;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-amber-50/20 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-gmc-dark text-white shadow-md sticky top-0 z-40 px-4 py-2.5 flex justify-between items-center border-b-2 border-gmc-gold">
+        <div class="flex items-center">
+            <div>
+                <h1 class="text-sm font-black tracking-wider text-gmc-gold uppercase">GMC</h1>
+                <p id="app-title" class="text-xs font-medium text-amber-100/80">🔍 Quick Check-In</p>
+            </div>
+        </div>
+        <span class="text-[10px] bg-gmc-gold/20 text-gmc-gold border border-gmc-gold/40 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+            Int'l Portal
+        </span>
+    </header>
+
+    <main class="flex-1 p-4 max-w-xl mx-auto w-full">
+        
+        <section id="tab-onboarding" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+                <div class="border-l-4 border-gmc-gold pl-3 mb-4">
+                    <h2 class="text-base font-bold text-gmc-dark">New Member Onboarding</h2>
+                    <p class="text-[11px] text-slate-500">Create a profile for a first-time visitor. All fields are optional.</p>
+                </div>
+                
+                <form id="new-member-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Full Name & Surname</label>
+                        <input type="text" name="full_name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Email Address</label>
+                            <input type="email" name="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Area Residing In</label>
+                            <input type="text" name="area" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all" placeholder="e.g. Pretoria">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Birthday Details</label>
+                            <input type="date" name="birthday" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Parent's Phone Number</label>
+                            <input type="tel" name="parent_phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Why do you believe the ministry is important?</label>
+                        <textarea name="why_important" rows="2" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">What is your go-to Scripture?</label>
+                        <input type="text" name="goto_scripture" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold transition-all" placeholder="e.g. Philippians 4:13">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-2">Skills / Areas of Interest</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer select-none">
+                                <input type="checkbox" name="skills" value="Music" class="w-5 h-5 rounded text-gmc-gold focus:ring-gmc-gold border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Music/Worship</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer select-none">
+                                <input type="checkbox" name="skills" value="Media" class="w-5 h-5 rounded text-gmc-gold focus:ring-gmc-gold border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Media/Tech</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer select-none">
+                                <input type="checkbox" name="skills" value="Hospitality" class="w-5 h-5 rounded text-gmc-gold focus:ring-gmc-gold border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Hospitality</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer select-none">
+                                <input type="checkbox" name="skills" value="Teaching" class="w-5 h-5 rounded text-gmc-gold focus:ring-gmc-gold border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Teaching</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="submitNewMember()" class="w-full bg-gmc-gold text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-gmc-gold/10 hover:bg-gmc-goldDark transition-colors mt-2 active:scale-[0.99]">
+                        Complete Registration
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <section id="tab-checkin" class="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+            <div id="welcome-banner" class="hidden transform scale-95 opacity-0 transition-all duration-300 bg-emerald-600 text-white p-6 rounded-2xl text-center shadow-lg shadow-emerald-100">
+                <i class="fa-solid fa-circle-check text-4xl mb-2 text-emerald-200"></i>
+                <h3 class="text-2xl font-black" id="welcome-message">Welcome, Eric!</h3>
+                <p class="text-emerald-100 text-xs mt-1">GMC attendance logged successfully.</p>
+                <button onclick="resetCheckInUI()" class="mt-4 bg-white/20 text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-white/30 transition-colors">
+                    Next Person <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <div id="currently-checkedin" class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100 space-y-3">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-gmc-bronze uppercase tracking-wider"><i class="fa-solid fa-sign-in-alt mr-1 text-emerald-600"></i> Currently Checked-In</span>
+                    <button onclick="loadCheckedInMembers()" class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold hover:bg-emerald-200 transition-colors">Refresh</button>
+                </div>
+                <div id="checkedin-list" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-xs text-slate-500 text-center py-4">Loading...</p>
+                </div>
+            </div>
+
+            <div id="search-container" class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100 space-y-4 relative">
+                <div>
+                    <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1.5">Start Typing Your Name</label>
+                    <div class="relative">
+                        <input type="text" id="search-input" oninput="handleSearch(this.value)" autocomplete="off" placeholder="e.g. Eric" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold text-lg font-medium transition-all">
+                        <div class="absolute left-4 top-4 text-gmc-gold">
+                            <i id="search-icon" class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="search-dropdown" class="hidden absolute top-[90px] left-5 right-5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                </div>
+            </div>
+
+            <div id="update-modal" class="hidden fixed inset-0 z-50 bg-gmc-dark/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+                <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-gmc-dark" id="update-modal-title">Update Profile Data</h3>
+                            <p class="text-xs text-slate-500">Keep milestone options accurate.</p>
+                        </div>
+                        <button onclick="closeUpdateModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                    <form id="update-member-form" class="space-y-4">
+                        <input type="hidden" name="member_id" id="update-member-id">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Age</label>
+                                <input type="number" name="age" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Gender</label>
+                                <select name="gender" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold">
+                                    <option value="">Select...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Location</label>
+                            <input type="text" name="location" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">When were you Baptised?</label>
+                                <input type="date" name="baptism_date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider mb-1">Future Baptism Target</label>
+                                <input type="date" name="target_baptism" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gmc-gold">
+                            </div>
+                        </div>
+                        <button type="button" onclick="submitProfileUpdate()" class="w-full bg-gmc-gold text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:bg-gmc-goldDark transition-colors">
+                            Save Account Updates
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="tab-register" class="hidden space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 space-y-3">
+                <span class="block text-xs font-bold text-gmc-bronze uppercase tracking-wider"><i class="fa-solid fa-filter mr-1 text-gmc-gold"></i> Rapid Register Filters</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="filter-area" onchange="applyRosterFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none text-slate-700 font-medium">
+                        <option value="">All Resident Areas</option>
+                        <option value="Pretoria">Pretoria</option>
+                        <option value="Midrand">Midrand</option>
+                    </select>
+                    <select id="filter-age" onchange="applyRosterFilters()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none text-slate-700 font-medium">
+                        <option value="">All Age Cohorts</option>
+                        <option value="kids">Kids (0-12)</option>
+                        <option value="teens">Teens (13-19)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="roster-grid" class="space-y-3">
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-xl flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+        <button onclick="switchTab('onboarding', '📝 New Register')" id="nav-onboarding" class="flex-1 py-3 text-slate-400 flex flex-col items-center gap-1 transition-colors">
+            <i class="fa-solid fa-user-plus text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wider uppercase">Add Member</span>
+        </button>
+        <button onclick="switchTab('checkin', '🔍 Quick Check-In')" id="nav-checkin" class="flex-1 py-3 text-gmc-gold flex flex-col items-center gap-1 transition-colors">
+            <i class="fa-solid fa-circle-check text-xl"></i>
+            <span class="text-[10px] font-bold tracking-wider uppercase">Check-In</span>
+        </button>
+        <button onclick="switchTab('register', '👥 Member Register')" id="nav-register" class="flex-1 py-3 text-slate-400 flex flex-col items-center gap-1 transition-colors">
+            <i class="fa-solid fa-address-book text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wider uppercase">Register</span>
+        </button>
+    </nav>
+
+    <script>
+        let checkInTimeout;
+
+        function loadCheckedInMembers() {
+            // Updated to route to dynamic checkins log if present, or gracefully fallback
+            fetch('/api/search?q=') 
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('checkedin-list');
+                    list.innerHTML = '';
+                    
+                    if(!data || data.length === 0) {
+                        list.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No one currently checked in</p>';
+                        return;
+                    }
+                    
+                    // Simple dashboard fallback visual tracking log matching basic search arrays
+                    data.slice(0, 3).forEach(person => {
+                        list.innerHTML += `
+                            <div class="p-3 rounded-lg border bg-emerald-50 border-emerald-200 flex justify-between items-start gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-bold text-sm text-slate-900">${person.name}</p>
+                                    <p class="text-xs text-slate-600"><i class="fa-solid fa-location-dot mr-1 text-emerald-600"></i>Area: ${person.area}</p>
+                                    <p class="text-xs text-slate-500"><i class="fa-solid fa-baby-carriage mr-1"></i>Age tracking parameter: ${person.age}</p>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded ml-auto">LOGGED ACTIVE</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(err => {
+                    console.error('Error loading checked-in members:', err);
+                    document.getElementById('checkedin-list').innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Waiting for check-in events...</p>';
+                });
+        }
+
+        function switchTab(tabId, titleText) {
+            document.getElementById('tab-onboarding').classList.add('hidden');
+            document.getElementById('tab-checkin').classList.add('hidden');
+            document.getElementById('tab-register').classList.add('hidden');
+            
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById('app-title').innerText = titleText;
+
+            ['onboarding', 'checkin', 'register'].forEach(id => {
+                const navBtn = document.getElementById(`nav-${id}`);
+                if(id === tabId) {
+                    navBtn.classList.remove('text-slate-400');
+                    navBtn.classList.add('text-gmc-gold');
+                } else {
+                    navBtn.classList.remove('text-gmc-gold');
+                    navBtn.classList.add('text-slate-400');
+                }
+            });
+            
+            if(tabId === 'register') {
+                loadRegister();
+            } else if(tabId === 'checkin') {
+                loadCheckedInMembers();
+            }
+        }
+
+        function handleSearch(val) {
+            const dropdown = document.getElementById('search-dropdown');
+            const icon = document.getElementById('search-icon');
+            
+            if (val.trim().length === 0) {
+                dropdown.classList.add('hidden');
+                icon.className = "fa-solid fa-magnifying-glass";
+                return;
+            }
+
+            icon.className = "fa-solid fa-spinner animate-spin text-gmc-gold";
+
+            fetch(`/api/search?q=${encodeURIComponent(val)}`)
+                .then(response => response.json())
+                .then(data => {
+                    icon.className = "fa-solid fa-magnifying-glass text-gmc-gold";
+                    
+                    if(data.length > 0) {
+                        dropdown.innerHTML = '';
+                        data.forEach(person => {
+                            dropdown.innerHTML += `
+                                <div class="w-full px-4 py-3 hover:bg-gmc-goldLight flex justify-between items-center transition-colors">
+                                    <div class="flex-1 min-w-0 pr-2">
+                                        <span class="font-bold block text-slate-900 truncate">${person.name}</span>
+                                        <span class="text-xs text-slate-500 block truncate">${person.status} • ${person.area} • Age ${person.age}</span>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button onclick="executeCheckIn('${person.name}')" class="text-xs font-bold text-white bg-gmc-gold py-1.5 px-3 rounded-lg hover:bg-gmc-goldDark transition-colors">Check-In</button>
+                                        <button onclick="openUpdateModal('${person.id}', '${person.name}')" class="text-xs font-bold text-slate-600 bg-slate-100 py-1.5 px-2 rounded-lg hover:bg-slate-200 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        dropdown.classList.remove('hidden');
+                    } else {
+                        dropdown.innerHTML = `<p class="p-4 text-xs text-slate-400 text-center font-medium">No matches found</p>`;
+                        dropdown.classList.remove('hidden');
+                    }
+                })
+                .catch(err => {
+                    icon.className = "fa-solid fa-magnifying-glass text-gmc-gold";
+                    dropdown.innerHTML = `<p class="p-4 text-xs text-red-400 text-center font-medium">Search error</p>`;
+                    dropdown.classList.remove('hidden');
+                    console.error('Search error:', err);
+                });
+        }
+
+        function executeCheckIn(fullName) {
+            fetch('/api/checkin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: fullName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('search-container').classList.add('hidden');
+                document.getElementById('search-dropdown').classList.add('hidden');
+                
+                const banner = document.getElementById('welcome-banner');
+                document.getElementById('welcome-message').innerText = `Welcome, ${fullName}!`;
+                
+                banner.classList.remove('hidden');
+                setTimeout(() => {
+                    banner.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+
+                loadCheckedInMembers();
+                
+                clearTimeout(checkInTimeout);
+                checkInTimeout = setTimeout(() => {
+                    resetCheckInUI();
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Check-in error:', err);
+            });
+        }
+
+        function resetCheckInUI() {
+            clearTimeout(checkInTimeout);
+            const banner = document.getElementById('welcome-banner');
+            
+            banner.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+                document.getElementById('search-container').classList.remove('hidden');
+                document.getElementById('search-input').value = '';
+            }, 200);
+        }
+
+        var current_opened_id = "";
+        function openUpdateModal(id, name) {
+            document.getElementById('search-dropdown').classList.add('hidden');
+            document.getElementById('update-member-id').value = id;
+            current_opened_id = id;
+            document.getElementById('update-modal-title').innerText = `Update Profile: ${name}`;
+            document.getElementById('update-modal').classList.remove('hidden');
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('update-modal').classList.add('hidden');
+            document.getElementById('update-member-form').reset();
+        }
+
+        function submitNewMember() {
+            const formData = new FormData(document.getElementById('new-member-form'));
+            fetch('/api/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert("Success! Profile added to GMC Database.");
+                    document.getElementById('new-member-form').reset();
+                    switchTab('checkin', '🔍 Quick Check-In');
+                    loadRegister();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                alert("Error submitting form: " + err);
+                console.error(err);
+            });
+        }
+
+        function submitProfileUpdate() {
+            const formData = new FormData(document.getElementById('update-member-form'));
+            
+            // Appends tracking parameters dynamically to match app.py expectations 
+            if(!formData.get('member_id') && current_opened_id) {
+                formData.set('member_id', current_opened_id);
+            }
+
+            fetch('/api/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert("Success! GMC Account updates saved.");
+                    closeUpdateModal();
+                    resetCheckInUI();
+                    loadRegister();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                alert("Error updating profile: " + err);
+                console.error(err);
+            });
+        }
+
+        function applyRosterFilters() {
+            const areaFilter = document.getElementById('filter-area').value.toLowerCase();
+            const ageFilter = document.getElementById('filter-age').value;
+            const cards = document.querySelectorAll('#roster-grid > div');
+
+            cards.forEach(card => {
+                const cardArea = (card.getAttribute('data-area') || '').toLowerCase();
+                const cardAge = parseInt(card.getAttribute('data-age')) || 0;
+
+                let matchesArea = !areaFilter || cardArea.includes(areaFilter);
+                let matchesAge = true;
+
+                if (ageFilter === 'kids') {
+                    matchesAge = cardAge >= 0 && cardAge <= 12;
+                } else if (ageFilter === 'teens') {
+                    matchesAge = cardAge >= 13 && cardAge <= 19;
+                }
+
+                if (matchesArea && matchesAge) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        function loadRegister() {
+            fetch('/api/roster')
+                .then(response => response.json())
+                .then(data => {
+                    const rosterGrid = document.getElementById('roster-grid');
+                    rosterGrid.innerHTML = '';
+                    
+                    if(data.length === 0) {
+                        rosterGrid.innerHTML = '<p class="p-4 text-center text-slate-500">No members found</p>';
+                        return;
+                    }
+                    
+                    data.forEach(person => {
+                        const hasPhone = person.parent_phone && person.parent_phone.trim() !== '';
+                        const ageNum = parseInt(person.age) || 0;
+                        const cardBorder = hasPhone ? 'border-amber-100' : 'border-orange-300 bg-orange-50/10';
+                        
+                        let cardContent = '';
+                        if(hasPhone) {
+                            cardContent = `
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border ${cardBorder} flex flex-col justify-between gap-3" data-area="${person.area}" data-age="${ageNum}">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-gmc-dark text-base">${person.name}</h4>
+                                            <p class="text-xs text-slate-500 font-medium"><i class="fa-solid fa-location-dot text-gmc-gold mr-1"></i>${person.area} • Age ${person.age}</p>
+                                        </div>
+                                    </div>
+                                    <a href="tel:${person.parent_phone}" class="w-full bg-gmc-gold text-white font-bold text-center py-2.5 rounded-xl text-sm hover:bg-gmc-goldDark transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                        <i class="fa-solid fa-phone"></i> Call Emergency Parent (${person.parent_phone})
+                                    </a>
+                                </div>`;
+                        } else {
+                            cardContent = `
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border ${cardBorder} flex flex-col justify-between gap-3" data-area="${person.area}" data-age="${ageNum}">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-gmc-dark text-base">${person.name}</h4>
+                                            <p class="text-xs text-slate-500 font-medium"><i class="fa-solid fa-location-dot text-gmc-gold mr-1"></i>${person.area} • Age ${person.age}</p>
+                                        </div>
+                                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 border border-orange-200 flex items-center gap-1">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> Missing Contact
+                                        </span>
+                                    </div>
+                                    <button disabled class="w-full bg-slate-100 text-slate-400 font-bold text-center py-2.5 rounded-xl text-sm cursor-not-allowed flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-phone-slash"></i> Phone Unavailable
+                                    </button>
+                                </div>`;
+                        }
+                        rosterGrid.innerHTML += cardContent;
+                    });
+                    
+                    // Runs filters to handle lingering selector states safely
+                    applyRosterFilters();
+                })
+                .catch(err => {
+                    console.error('Roster fetch layout breakdown error:', err);
+                    document.getElementById('roster-grid').innerHTML = '<p class="p-4 text-center text-red-500">Error loading register feed</p>';
+                });
+        }
+
+        // Initialize active tracking state view setups
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCheckedInMembers();
+        });
+    </script>
+</body>
+</html>

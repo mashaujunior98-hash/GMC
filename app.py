@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from bson.objectid import ObjectId
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
@@ -11,6 +11,8 @@ app = Flask(__name__, static_folder='images', static_url_path='/images')
 # Replace this string with the actual Driver URI from your Atlas modal screen!
 # =========================================================================
 client = MongoClient( os.getenv("MONGO_URI"))
+
+
 try:
     client = MongoClient(MONGO_URI)
     db = client['gmc_ministry_db']
@@ -20,13 +22,19 @@ try:
 except Exception as e:
     print(f"Database connection breakdown error: {e}")
 
-# Helper function to compute age accurately from birthday string
+# Helper function to compute age accurately from birthday string or datetime object
 def calculate_age(born_str):
     if not born_str:
         return "N/A"
     try:
-        born = datetime.strptime(born_str, "%Y-%m-%d")
-        today = datetime.today()
+        if isinstance(born_str, datetime):
+            born = born_str
+        elif isinstance(born_str, date):
+            born = datetime(born_str.year, born_str.month, born_str.day)
+        else:
+            born = datetime.strptime(str(born_str).strip(), "%Y-%m-%d")
+
+        today = datetime.now(born.tzinfo) if getattr(born, 'tzinfo', None) else datetime.now()
         return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
     except Exception:
         return "N/A"
@@ -229,7 +237,7 @@ def update_profile():
 def get_emergency_roster():
     try:
         # FIX: Only look up active check-ins instead of pulling all members
-        active_checkins = attendance_col.find({"checked_out": False})
+        active_checkins = list(attendance_col.find({"checked_out": False}))
         roster_output = []
         
         for log in active_checkins:
@@ -239,17 +247,22 @@ def get_emergency_roster():
                 continue
                 
             age_raw = record.get("age")
-            calculated_age_val = calculate_age(record.get("birthday")) if not age_raw else age_raw
+            b_day = record.get("birthday")
+            calculated_age_val = calculate_age(b_day) if not age_raw else age_raw
+
+            raw_parent_phone = log.get("parent_phone", "")
+            parent_phone = raw_parent_phone.strip() if isinstance(raw_parent_phone, str) else (raw_parent_phone or "")
             
             roster_output.append({
                 "name": log.get("name", "Unknown Profile"),
                 "area": record.get("location") or record.get("area") or "Unknown Area",
                 "age": calculated_age_val,
-                "parent_phone": log.get("parent_phone", "").strip()
+                "parent_phone": parent_phone
             })
         return jsonify(roster_output)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Roster failure log: {e}")
+        return jsonify([]), 500
 if __name__ == '__main__':
     # Starts app local listening service network layer 
     app.run(debug=True, host='0.0.0.0', port=5000)

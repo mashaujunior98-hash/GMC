@@ -10,8 +10,7 @@ app = Flask(__name__, static_folder='images', static_url_path='/images')
 # DATABASE CONNECTION SETUP
 # Replace this string with the actual Driver URI from your Atlas modal screen!
 # =========================================================================
-MONGO_URI = "mongodb+srv://mashaujunior98_db_user:5ozrMFQhK5dqcWCu@data.ccgekex.mongodb.net/?retryWrites=true&w=majority"
-
+client = MongoClient( os.getenv("MONGO_URI")
 try:
     client = MongoClient(MONGO_URI)
     db = client['gmc_ministry_db']
